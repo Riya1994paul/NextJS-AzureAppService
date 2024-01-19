@@ -1,5 +1,5 @@
 trigger:
-- main  # Change this to your branch
+- main  
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -7,9 +7,9 @@ pool:
 steps:
 - script: echo 'Starting Build and Deploy'
 
-- task: NodeTool@0
+- task: UseNode@2
   inputs:
-    versionSpec: '14.x'
+    version: '14'
     checkLatest: true
 
 - script: |
@@ -20,24 +20,25 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'weathermanriya'  #  Docker registry name
-    repository: 'riyarepo'  # Docker repository name
+    repository: 'riyarepo'  # your Docker repository name
     command: 'build'
     Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
     tags: '$(Build.BuildId)'
+    includeLatestTag: true
 
 - task: Docker@2
   inputs:
-    containerRegistry: 'weathermanriya'  #  Docker registry name
-    repository: 'riyarepo'  #Docker repository name
+    containerRegistry: 'weathermanriya'  # Docker registry name
+    repository: 'riyarepo'  # Docker repository name
     command: 'push'
     tags: '$(Build.BuildId)'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
     ConnectionType: 'AzureRM'
-    azureSubscription: ' Free Tier '  # zure service connection name
+    azureSubscription: 'Free Tier'  # Replace with your Azure service connection name
     appType: 'webAppContainer'
-    WebAppName: 'webapp-weather'  # Azure App Service name
+    WebAppName: 'webapp-weather'  # Replace with your Azure App Service name
     DockerNamespace: 'weathermanriya'
     DockerRepository: 'riyarepo'
     DockerImageTag: '$(Build.BuildId)'
