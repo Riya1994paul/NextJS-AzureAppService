@@ -7,9 +7,9 @@ pool:
 steps:
 - script: echo 'Starting Build and Deploy'
 
-- task: UseNode@2
+- task: NodeTool@0
   inputs:
-    version: '14'
+    versionSpec: '14.x'
     checkLatest: true
 
 - script: |
@@ -19,8 +19,8 @@ steps:
 
 - task: Docker@2
   inputs:
-    containerRegistry: 'weathermanriya'
-    repository: 'riyarepo'  #Docker repository name
+    containerRegistry: 'weathermanriya'  #  Docker registry name
+    repository: 'riyarepo'  # Docker repository name
     command: 'build'
     Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
     tags: '$(Build.BuildId)'
@@ -28,23 +28,16 @@ steps:
 - task: Docker@2
   inputs:
     containerRegistry: 'weathermanriya'  #  Docker registry name
-    repository: 'riyarepo'  # Docker repository name
+    repository: 'riyarepo'  #Docker repository name
     command: 'push'
     tags: '$(Build.BuildId)'
 
 - task: AzureRmWebAppDeployment@4
   inputs:
     ConnectionType: 'AzureRM'
-    azureSubscription: 'Free Trial'  #Azure service connection name
+    azureSubscription: ' Free Tier '  # zure service connection name
     appType: 'webAppContainer'
-    WebAppName: 'webapp-weather'  #Azure App Service name
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: false
+    WebAppName: 'webapp-weather'  # Azure App Service name
     DockerNamespace: 'weathermanriya'
     DockerRepository: 'riyarepo'
     DockerImageTag: '$(Build.BuildId)'
