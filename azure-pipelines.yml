@@ -1,39 +1,36 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
-- master
+- main  # Change this to your branch
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: NodeTool@0
+- script: echo 'Starting Build and Deploy'
+
+- task: UseNode@2
   inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+    version: '14'
+    checkLatest: true
 
 - script: |
     npm install
     npm run build
-  displayName: 'npm install and build'
-- task: ArchiveFiles@1
-  displayName: 'Archive files '
-  inputs:
-    rootFolder: '$(System.DefaultWorkingDirectory)'
-    includeRootFolder: false
+  displayName: 'Install and Build'
 
-- task: CopyFiles@2
-  displayName: 'Copy File to: $(TargetFolder)'
+- task: Docker@2
   inputs:
-    SourceFolder: '$(Build.ArtifactStagingDirectory)'
-    Contents: '$(Build.BuildId).zip'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)\ArtifactsToBePublished'
+    containerRegistry: 'weathermanriya'  # Replace with your Docker registry name
+    repository: 'riyarepo'  # Replace with your Docker repository name
+    command: 'buildAndPush'
+    Dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+    tags: '$(Build.BuildId)'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: SampleApp'
+- task: AzureRmWebAppDeployment@4
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)\ArtifactsToBePublished'
-
+    ConnectionType: 'AzureRM'
+    azureSubscription: 'YourAzureServiceConnection'  # Replace with your Azure service connection name
+    appType: 'webAppContainer'
+    WebAppName: 'YourWebAppName'  # Replace with your Azure App Service name
+    DockerNamespace: 'weathermanriya'
+    DockerRepository: 'riyarepo'
+    DockerImageTag: '$(Build.BuildId)'
